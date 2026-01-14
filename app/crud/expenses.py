@@ -1,22 +1,19 @@
 from app.models import ExpenseCreate, ExpenseResponse, ExpenseUpdate
-from app.database import get_connection
 import psycopg2
 
-def create_expense(expense: ExpenseCreate) -> ExpenseResponse:
+def create_expense(expense: ExpenseCreate, conn: psycopg2.extensions.connection) -> ExpenseResponse:
     """
     Create a new expense in the database
 
     Args:
         expense: ExpenseCreate model with validated data
-        
+        conn: psycopg2 connection object
     Returns:
         ExpenseResponse with id and timestamps from database
         
     Raises:
         psycopg2.Error: If database operation fails
     """
-    gen = get_connection()
-    conn = next(gen)
 
     try:
         with conn.cursor() as cursor:
@@ -41,21 +38,22 @@ def create_expense(expense: ExpenseCreate) -> ExpenseResponse:
     except psycopg2.Error as e:
         conn.rollback()
         raise 
-    finally:
-        gen.close()
 
-def get_expense_by_id(expense_id: int) -> ExpenseResponse | None:
+
+def get_expense_by_id(expense_id: int, conn: psycopg2.extensions.connection) -> ExpenseResponse | None:
     """
     Get an expense from the database
 
     Args:
         expense_id: The ID of the expense to get
+        conn: psycopg2 connection object
 
     Returns:
         ExpenseResponse with the expense data
+        
+    Raises:
+        psycopg2.Error: If database operation fails
     """
-    gen = get_connection()
-    conn = next(gen)
     try:
         with conn.cursor() as cursor:
             sql = """SELECT * FROM expenses WHERE id = %s"""
@@ -72,12 +70,16 @@ def get_expense_by_id(expense_id: int) -> ExpenseResponse | None:
                 created_at=row[5],
                 updated_at=row[6]
             )
-    finally:
-        gen.close()
+    except psycopg2.Error:
+        raise
 
-def get_all_expenses() -> list[ExpenseResponse]:
+
+def get_all_expenses(conn: psycopg2.extensions.connection) -> list[ExpenseResponse]:
     """
     Get all expenses from the database
+
+    Args:
+        conn: psycopg2 connection object
 
     Returns:
         List of ExpenseResponse objects (empty list if none found)
@@ -85,9 +87,6 @@ def get_all_expenses() -> list[ExpenseResponse]:
     Raises:
         psycopg2.Error: If database operation fails
     """
-    gen = get_connection()
-    conn = next(gen)
-
     try:
         with conn.cursor() as cursor:
             sql = """SELECT * FROM expenses ORDER BY date DESC"""
@@ -105,23 +104,24 @@ def get_all_expenses() -> list[ExpenseResponse]:
             )
             for row in rows
         ]
-    finally:
-        gen.close()
+    except psycopg2.Error:
+        raise
 
-def update_expense(expense_id: int, expense: ExpenseUpdate) -> ExpenseResponse | None:
+def update_expense(expense_id: int, expense: ExpenseUpdate, conn: psycopg2.extensions.connection) -> ExpenseResponse | None:
     """
     Update an expense in the database (partial update supported)
     
     Args:
         expense_id: ID of expense to update
         expense: ExpenseUpdate with fields to update (None = don't update)
+        conn: psycopg2 connection object
         
     Returns:
         ExpenseResponse with updated data if found, None if not found
+        
+    Raises:
+        psycopg2.Error: If database operation fails
     """
-    gen = get_connection()
-    conn = next(gen)
-    
     try:
         with conn.cursor() as cursor:
             # Build dynamic SET clause for partial updates
@@ -146,7 +146,7 @@ def update_expense(expense_id: int, expense: ExpenseUpdate) -> ExpenseResponse |
             
             # Check if anything to update
             if not update_fields:
-                return get_expense_by_id(expense_id)  # No changes, return current
+                return get_expense_by_id(expense_id, conn)  # No changes, return current
             
             # Always update timestamp
             update_fields.append("updated_at = CURRENT_TIMESTAMP")
@@ -178,22 +178,21 @@ def update_expense(expense_id: int, expense: ExpenseUpdate) -> ExpenseResponse |
     except psycopg2.Error:
         conn.rollback()
         raise
-    finally:
-        gen.close()
 
-def delete_expense(id: int) -> bool:
+def delete_expense(id: int, conn: psycopg2.extensions.connection) -> bool:
     """
     Delete an expense from the database
 
     Args:
         id: The ID of the expense to delete
+        conn: psycopg2 connection object
 
     Returns:
         True if the expense was deleted, False otherwise
+        
+    Raises:
+        psycopg2.Error: If database operation fails
     """
-    gen = get_connection()
-    conn = next(gen)
-    
     try:
         with conn.cursor() as cursor:
             sql = """DELETE FROM expenses WHERE id = %s RETURNING *"""
@@ -209,5 +208,3 @@ def delete_expense(id: int) -> bool:
     except psycopg2.Error:
         conn.rollback()
         raise
-    finally:
-        gen.close()
