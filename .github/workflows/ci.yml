@@ -89,12 +89,12 @@ jobs:
           POSTGRES_DB=expensetracker_test
           EOF
       
-      - name: Start services with docker-compose
-        run: docker-compose up -d
+      - name: Start services with docker compose
+        run: docker compose up -d
       
       - name: Wait for database to be ready
         run: |
-          timeout 30 bash -c 'until docker-compose exec -T db pg_isready -U postgres; do sleep 2; done'
+          timeout 30 bash -c 'until docker compose exec -T db pg_isready -U postgres; do sleep 2; done'
       
       - name: Install curl
         run: sudo apt-get update && sudo apt-get install -y curl
@@ -120,16 +120,16 @@ jobs:
       - name: Verify database connection
         run: |
           # Check that app can connect to database by checking logs
-          docker-compose logs app | grep -q "Database initialized successfully" || echo "Warning: Database init message not found in logs"
+          docker compose logs app | grep -q "Database initialized successfully" || echo "Warning: Database init message not found in logs"
       
       - name: Check container logs
         if: failure()
         run: |
           echo "=== App logs ==="
-          docker-compose logs app
+          docker compose logs app
           echo "=== DB logs ==="
-          docker-compose logs db
+          docker compose logs db
       
       - name: Stop services
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
