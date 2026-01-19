@@ -9,7 +9,6 @@ import os
 import pytest
 import psycopg2
 from psycopg2 import pool
-from app.database import init_pool, init_db, close_pool, get_connection
 from app.services.expenses import ExpenseService
 
 

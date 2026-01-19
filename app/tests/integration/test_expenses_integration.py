@@ -5,12 +5,10 @@ Tests the full stack: Router → Service → CRUD → Database
 Uses a real test database to verify actual SQL queries and data persistence.
 """
 
-import pytest
 from decimal import Decimal
 from datetime import date, datetime
 
 from app.models import ExpenseCreate, ExpenseUpdate
-from app.services.expenses import ExpenseService, DatabaseError
 
 
 class TestExpenseServiceIntegration:
