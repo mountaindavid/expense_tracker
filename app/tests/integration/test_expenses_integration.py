@@ -4,6 +4,7 @@ Integration tests for expense operations.
 Tests the full stack: Router → Service → CRUD → Database
 Uses a real test database to verify actual SQL queries and data persistence.
 """
+
 import pytest
 from decimal import Decimal
 from datetime import date, datetime
@@ -18,10 +19,7 @@ class TestExpenseServiceIntegration:
     def test_create_expense_integration(self, expense_service):
         """Test creating expense through full stack"""
         expense_data = ExpenseCreate(
-            amount=Decimal("100.50"),
-            category="Food",
-            description="Lunch",
-            date=date(2024, 1, 15)
+            amount=Decimal("100.50"), category="Food", description="Lunch", date=date(2024, 1, 15)
         )
 
         result = expense_service.create(expense_data)
@@ -41,7 +39,7 @@ class TestExpenseServiceIntegration:
             amount=Decimal("200.00"),
             category="Transport",
             description="Bus ticket",
-            date=date(2024, 1, 16)
+            date=date(2024, 1, 16),
         )
         created = expense_service.create(expense_data)
 
@@ -62,15 +60,9 @@ class TestExpenseServiceIntegration:
     def test_get_all_expenses_integration(self, expense_service):
         """Test retrieving all expenses through full stack"""
         # Create multiple expenses
-        expense1 = ExpenseCreate(
-            amount=Decimal("50.00"),
-            category="Food",
-            date=date(2024, 1, 15)
-        )
+        expense1 = ExpenseCreate(amount=Decimal("50.00"), category="Food", date=date(2024, 1, 15))
         expense2 = ExpenseCreate(
-            amount=Decimal("75.00"),
-            category="Transport",
-            date=date(2024, 1, 16)
+            amount=Decimal("75.00"), category="Transport", date=date(2024, 1, 16)
         )
 
         expense_service.create(expense1)
@@ -87,18 +79,12 @@ class TestExpenseServiceIntegration:
         """Test updating expense through full stack"""
         # Create expense
         expense_data = ExpenseCreate(
-            amount=Decimal("100.00"),
-            category="Food",
-            description="Lunch",
-            date=date(2024, 1, 15)
+            amount=Decimal("100.00"), category="Food", description="Lunch", date=date(2024, 1, 15)
         )
         created = expense_service.create(expense_data)
 
         # Update it
-        update_data = ExpenseUpdate(
-            amount=Decimal("150.00"),
-            description="Dinner"
-        )
+        update_data = ExpenseUpdate(amount=Decimal("150.00"), description="Dinner")
         updated = expense_service.update(created.id, update_data)
 
         assert updated is not None
@@ -118,9 +104,7 @@ class TestExpenseServiceIntegration:
         """Test deleting expense through full stack"""
         # Create expense
         expense_data = ExpenseCreate(
-            amount=Decimal("100.00"),
-            category="Food",
-            date=date(2024, 1, 15)
+            amount=Decimal("100.00"), category="Food", date=date(2024, 1, 15)
         )
         created = expense_service.create(expense_data)
 
@@ -143,10 +127,7 @@ class TestExpenseServiceIntegration:
         """Test complete CRUD workflow"""
         # Create
         expense_data = ExpenseCreate(
-            amount=Decimal("100.00"),
-            category="Food",
-            description="Lunch",
-            date=date(2024, 1, 15)
+            amount=Decimal("100.00"), category="Food", description="Lunch", date=date(2024, 1, 15)
         )
         created = expense_service.create(expense_data)
         assert created.id is not None

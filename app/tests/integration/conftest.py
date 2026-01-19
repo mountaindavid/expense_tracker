@@ -4,6 +4,7 @@ Pytest fixtures for integration tests.
 Integration tests use a real test database to test the full stack:
 Router → Service → CRUD → Database
 """
+
 import os
 import pytest
 import psycopg2
@@ -16,8 +17,7 @@ from app.services.expenses import ExpenseService
 def test_database_url():
     """Get test database URL from environment or use default"""
     return os.getenv(
-        "TEST_DATABASE_URL",
-        "postgresql://postgres:postgres@localhost:5432/expensetracker_test"
+        "TEST_DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/expensetracker_test"
     )
 
 
@@ -40,11 +40,7 @@ def test_db_pool(test_database_url):
     except Exception:
         pass  # Database might already exist or we can't create it
 
-    test_pool = pool.SimpleConnectionPool(
-        minconn=1,
-        maxconn=5,
-        dsn=test_database_url
-    )
+    test_pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, dsn=test_database_url)
     yield test_pool
     test_pool.closeall()
 
