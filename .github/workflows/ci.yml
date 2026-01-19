@@ -45,6 +45,8 @@ jobs:
         run: flake8 app/ --count --statistics
       
       - name: Run unit tests
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expensetracker_test
         run: pytest app/tests/unit/ -v
       
       - name: Run integration tests
