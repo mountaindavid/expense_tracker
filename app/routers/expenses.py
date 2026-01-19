@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.models import ExpenseCreate, ExpenseResponse, ExpenseUpdate
-from app.services.expenses import DatabaseError, ExpenseService
+from app.services.expenses import DatabaseError, ExpenseNotFoundError, ExpenseService
 from app.dependencies import get_expense_service
 
 router = APIRouter()
@@ -33,6 +33,7 @@ def get_all_expenses_route(
     try:
         return service.get_all()
     except DatabaseError as e:
+        # Technical error -> HTTP 500
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
@@ -46,15 +47,12 @@ def get_expense_by_id_route(
     Returns 200 OK if found, 404 Not Found if expense doesn't exist.
     """
     try:
-        expense = service.get_by_id(id)
-        if expense is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Expense with id {id} not found"
-            )
-        return expense
-    except HTTPException:
-        raise
+        return service.get_by_id(id)
+    except ExpenseNotFoundError as e:
+        # Business error -> HTTP 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DatabaseError as e:
+        # Technical error -> HTTP 500
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
@@ -68,15 +66,12 @@ def update_expense_route(
     Returns 200 OK if updated successfully, 404 Not Found if expense doesn't exist.
     """
     try:
-        updated_expense = service.update(id, expense)
-        if updated_expense is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Expense with id {id} not found"
-            )
-        return updated_expense
-    except HTTPException:
-        raise
+        return service.update(id, expense)
+    except ExpenseNotFoundError as e:
+        # Business error -> HTTP 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DatabaseError as e:
+        # Technical error -> HTTP 500
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
@@ -88,14 +83,11 @@ def delete_expense_route(id: int, service: ExpenseService = Depends(get_expense_
     Returns 204 No Content if deleted successfully, 404 Not Found if expense doesn't exist.
     """
     try:
-        deleted = service.delete(id)
-        if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Expense with id {id} not found"
-            )
-        # 204 No Content means no response body, so we return None explicitly
+        service.delete(id)
         return None
-    except HTTPException:
-        raise
+    except ExpenseNotFoundError as e:
+        # Business error -> HTTP 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DatabaseError as e:
+        # Technical error -> HTTP 500
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
