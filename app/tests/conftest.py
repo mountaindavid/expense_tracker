@@ -1,6 +1,7 @@
 """
 Pytest fixtures for unit tests.
 """
+
 import pytest
 from unittest.mock import Mock
 

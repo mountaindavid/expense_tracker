@@ -21,3 +21,12 @@ postgres_data/
 *.swo
 .DS_Store
 .cursorignore
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+*.cover
+
+# Pytest
+.pytest_cache/

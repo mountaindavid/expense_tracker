@@ -1,6 +1,12 @@
 from app.models import ExpenseCreate, ExpenseResponse, ExpenseUpdate
 import psycopg2
-from app.crud import create_expense, get_all_expenses, get_expense_by_id, update_expense, delete_expense
+from app.crud import (
+    create_expense,
+    get_all_expenses,
+    get_expense_by_id,
+    update_expense,
+    delete_expense,
+)
 
 
 class ExpenseService:
@@ -18,13 +24,13 @@ class ExpenseService:
             return get_all_expenses(self.conn)
         except psycopg2.Error as e:
             raise DatabaseError(f"Database error: {str(e)}")
-            
+
     def get_by_id(self, expense_id: int) -> ExpenseResponse | None:
         try:
             return get_expense_by_id(expense_id, self.conn)
         except psycopg2.Error as e:
             raise DatabaseError(f"Database error: {str(e)}")
-    
+
     def update(self, expense_id: int, expense: ExpenseUpdate) -> ExpenseResponse | None:
         try:
             return update_expense(expense_id, expense, self.conn)

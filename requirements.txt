@@ -5,3 +5,6 @@ pydantic-settings
 uvicorn
 pytest
 pytest-mock
+pytest-cov
+flake8
+black
