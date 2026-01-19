@@ -22,7 +22,7 @@ class ExpenseService:
     def get_all(self) -> list[ExpenseResponse]:
         """
         Get all expenses.
-        
+
         Raises:
             DatabaseError: If database operation fails (technical error)
         """
@@ -34,7 +34,7 @@ class ExpenseService:
     def get_by_id(self, expense_id: int) -> ExpenseResponse:
         """
         Get expense by ID.
-        
+
         Raises:
             ExpenseNotFoundError: If expense doesn't exist (business error)
             DatabaseError: If database operation fails (technical error)
@@ -50,7 +50,7 @@ class ExpenseService:
     def update(self, expense_id: int, expense: ExpenseUpdate) -> ExpenseResponse:
         """
         Update an expense.
-        
+
         Raises:
             ExpenseNotFoundError: If expense doesn't exist (business error)
             DatabaseError: If database operation fails (technical error)
@@ -66,7 +66,7 @@ class ExpenseService:
     def delete(self, expense_id: int) -> None:
         """
         Delete an expense.
-        
+
         Raises:
             ExpenseNotFoundError: If expense doesn't exist (business error)
             DatabaseError: If database operation fails (technical error)
@@ -82,9 +82,11 @@ class ExpenseService:
 
 class DatabaseError(Exception):
     """Technical database error - should be converted to 500"""
+
     pass
 
 
 class ExpenseNotFoundError(Exception):
     """Business error - expense not found - should be converted to 404"""
+
     pass

@@ -11,7 +11,7 @@ from datetime import date, datetime
 import psycopg2
 
 from app.models import ExpenseCreate, ExpenseResponse, ExpenseUpdate
-from app.services.expenses import ExpenseService, DatabaseError
+from app.services.expenses import ExpenseService, DatabaseError, ExpenseNotFoundError
 
 
 class TestExpenseServiceCreate:
@@ -125,12 +125,12 @@ class TestExpenseServiceGetById:
             mock_get_by_id.assert_called_once_with(1, mock_conn)
 
     def test_get_by_id_not_found(self, mock_conn):
-        """Test that None is returned when expense not found"""
+        """Test that ExpenseNotFoundError is raised when expense not found"""
         with patch("app.services.expenses.get_expense_by_id", return_value=None):
             service = ExpenseService(mock_conn)
-            result = service.get_by_id(999)
-
-            assert result is None
+            with pytest.raises(ExpenseNotFoundError) as exc_info:
+                service.get_by_id(999)
+            assert "Expense with id 999 not found" in str(exc_info.value)
 
     def test_get_by_id_database_error(self, mock_conn):
         """Test that psycopg2.Error is converted to DatabaseError"""
@@ -169,14 +169,14 @@ class TestExpenseServiceUpdate:
             mock_update.assert_called_once_with(1, expense_update, mock_conn)
 
     def test_update_not_found(self, mock_conn):
-        """Test that None is returned when expense not found"""
+        """Test that ExpenseNotFoundError is raised when expense not found"""
         expense_update = ExpenseUpdate(amount=Decimal("150.00"))
 
         with patch("app.services.expenses.update_expense", return_value=None):
             service = ExpenseService(mock_conn)
-            result = service.update(999, expense_update)
-
-            assert result is None
+            with pytest.raises(ExpenseNotFoundError) as exc_info:
+                service.update(999, expense_update)
+            assert "Expense with id 999 not found" in str(exc_info.value)
 
     def test_update_database_error(self, mock_conn):
         """Test that psycopg2.Error is converted to DatabaseError"""
@@ -198,16 +198,16 @@ class TestExpenseServiceDelete:
             service = ExpenseService(mock_conn)
             result = service.delete(1)
 
-            assert result is True
+            assert result is None
             mock_delete.assert_called_once_with(1, mock_conn)
 
     def test_delete_not_found(self, mock_conn):
-        """Test that False is returned when expense not found"""
+        """Test that ExpenseNotFoundError is raised when expense not found"""
         with patch("app.services.expenses.delete_expense", return_value=False):
             service = ExpenseService(mock_conn)
-            result = service.delete(999)
-
-            assert result is False
+            with pytest.raises(ExpenseNotFoundError) as exc_info:
+                service.delete(999)
+            assert "Expense with id 999 not found" in str(exc_info.value)
 
     def test_delete_database_error(self, mock_conn):
         """Test that psycopg2.Error is converted to DatabaseError"""

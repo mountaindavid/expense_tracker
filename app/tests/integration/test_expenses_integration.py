@@ -5,10 +5,12 @@ Tests the full stack: Router → Service → CRUD → Database
 Uses a real test database to verify actual SQL queries and data persistence.
 """
 
+import pytest
 from decimal import Decimal
 from datetime import date, datetime
 
 from app.models import ExpenseCreate, ExpenseUpdate
+from app.services.expenses import ExpenseNotFoundError
 
 
 class TestExpenseServiceIntegration:
@@ -51,9 +53,9 @@ class TestExpenseServiceIntegration:
 
     def test_get_expense_by_id_not_found_integration(self, expense_service):
         """Test retrieving non-existent expense"""
-        result = expense_service.get_by_id(99999)
-
-        assert result is None
+        with pytest.raises(ExpenseNotFoundError) as exc_info:
+            expense_service.get_by_id(99999)
+        assert "Expense with id 99999 not found" in str(exc_info.value)
 
     def test_get_all_expenses_integration(self, expense_service):
         """Test retrieving all expenses through full stack"""
@@ -94,9 +96,9 @@ class TestExpenseServiceIntegration:
     def test_update_expense_not_found_integration(self, expense_service):
         """Test updating non-existent expense"""
         update_data = ExpenseUpdate(amount=Decimal("150.00"))
-        result = expense_service.update(99999, update_data)
-
-        assert result is None
+        with pytest.raises(ExpenseNotFoundError) as exc_info:
+            expense_service.update(99999, update_data)
+        assert "Expense with id 99999 not found" in str(exc_info.value)
 
     def test_delete_expense_integration(self, expense_service):
         """Test deleting expense through full stack"""
@@ -107,19 +109,18 @@ class TestExpenseServiceIntegration:
         created = expense_service.create(expense_data)
 
         # Delete it
-        deleted = expense_service.delete(created.id)
-
-        assert deleted is True
+        result = expense_service.delete(created.id)
+        assert result is None
 
         # Verify it's gone
-        result = expense_service.get_by_id(created.id)
-        assert result is None
+        with pytest.raises(ExpenseNotFoundError):
+            expense_service.get_by_id(created.id)
 
     def test_delete_expense_not_found_integration(self, expense_service):
         """Test deleting non-existent expense"""
-        result = expense_service.delete(99999)
-
-        assert result is False
+        with pytest.raises(ExpenseNotFoundError) as exc_info:
+            expense_service.delete(99999)
+        assert "Expense with id 99999 not found" in str(exc_info.value)
 
     def test_full_crud_workflow_integration(self, expense_service):
         """Test complete CRUD workflow"""
@@ -145,9 +146,9 @@ class TestExpenseServiceIntegration:
         assert retrieved_after_update.amount == Decimal("150.00")
 
         # Delete
-        deleted = expense_service.delete(created.id)
-        assert deleted is True
+        delete_result = expense_service.delete(created.id)
+        assert delete_result is None
 
         # Verify deletion
-        final_check = expense_service.get_by_id(created.id)
-        assert final_check is None
+        with pytest.raises(ExpenseNotFoundError):
+            expense_service.get_by_id(created.id)

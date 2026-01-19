@@ -11,7 +11,7 @@ from decimal import Decimal
 from datetime import date, datetime
 
 from app.models import ExpenseCreate, ExpenseResponse, ExpenseUpdate
-from app.services.expenses import ExpenseService, DatabaseError
+from app.services.expenses import ExpenseService, DatabaseError, ExpenseNotFoundError
 from app.app import app
 
 # Import dependency function after app is imported to avoid circular imports
@@ -210,9 +210,9 @@ class TestGetExpenseByIdRoute:
 
     def test_get_expense_by_id_not_found(self):
         """Test that not found returns 404 Not Found"""
-        # Arrange: Mock service returns None
+        # Arrange: Mock service raises ExpenseNotFoundError
         mock_service = Mock(spec=ExpenseService)
-        mock_service.get_by_id.return_value = None
+        mock_service.get_by_id.side_effect = ExpenseNotFoundError("Expense with id 999 not found")
 
         app.dependency_overrides[get_expense_service] = lambda: mock_service
 
@@ -315,9 +315,9 @@ class TestUpdateExpenseRoute:
 
     def test_update_expense_not_found(self):
         """Test that not found returns 404 Not Found"""
-        # Arrange: Mock service returns None
+        # Arrange: Mock service raises ExpenseNotFoundError
         mock_service = Mock(spec=ExpenseService)
-        mock_service.update.return_value = None
+        mock_service.update.side_effect = ExpenseNotFoundError("Expense with id 999 not found")
 
         app.dependency_overrides[get_expense_service] = lambda: mock_service
 
@@ -354,9 +354,9 @@ class TestDeleteExpenseRoute:
 
     def test_delete_expense_success(self):
         """Test successful deletion returns 204 No Content"""
-        # Arrange: Mock service returns True
+        # Arrange: Mock service returns None (success)
         mock_service = Mock(spec=ExpenseService)
-        mock_service.delete.return_value = True
+        mock_service.delete.return_value = None
 
         app.dependency_overrides[get_expense_service] = lambda: mock_service
 
@@ -373,9 +373,9 @@ class TestDeleteExpenseRoute:
 
     def test_delete_expense_not_found(self):
         """Test that not found returns 404 Not Found"""
-        # Arrange: Mock service returns False
+        # Arrange: Mock service raises ExpenseNotFoundError
         mock_service = Mock(spec=ExpenseService)
-        mock_service.delete.return_value = False
+        mock_service.delete.side_effect = ExpenseNotFoundError("Expense with id 999 not found")
 
         app.dependency_overrides[get_expense_service] = lambda: mock_service
 
