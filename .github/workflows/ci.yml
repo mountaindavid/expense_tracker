@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expensetracker_test
+    
     services:
       postgres:
         image: postgres:15
@@ -45,13 +48,9 @@ jobs:
         run: flake8 app/ --count --statistics
       
       - name: Run unit tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expensetracker_test
         run: pytest app/tests/unit/ -v
       
       - name: Run integration tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expensetracker_test
         run: pytest app/tests/integration/ -v
       
       - name: Generate coverage report
